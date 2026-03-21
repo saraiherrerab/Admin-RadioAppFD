@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants';
 
@@ -36,29 +37,44 @@ const scheduleData = [
 ];
 
 export const Schedule = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="calendar-outline" size={24} color={COLORS.primary} />
-        <Text style={styles.title}>Programación de Hoy</Text>
-      </View>
+      <TouchableOpacity 
+        style={styles.header}
+        onPress={() => setIsExpanded(!isExpanded)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.headerLeft}>
+          <Ionicons name="calendar-outline" size={24} color={COLORS.primary} />
+          <Text style={styles.title}>Programación de Hoy</Text>
+        </View>
+        <Ionicons 
+          name={isExpanded ? "chevron-up" : "chevron-down"} 
+          size={24} 
+          color={COLORS.textSecondary} 
+        />
+      </TouchableOpacity>
 
-      <View style={styles.programList}>
-        {scheduleData.map((item) => (
-          <View key={item.id} style={styles.programItem}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="radio-outline" size={24} color={COLORS.primary} />
+      {isExpanded && (
+        <View style={styles.programList}>
+          {scheduleData.map((item) => (
+            <View key={item.id} style={styles.programItem}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="radio-outline" size={24} color={COLORS.primary} />
+              </View>
+              
+              <View style={styles.programInfo}>
+                <Text style={styles.programName}>{item.program}</Text>
+                <Text style={styles.hostName}>{item.host}</Text>
+              </View>
+              
+              <Text style={styles.timeText}>{item.time}</Text>
             </View>
-            
-            <View style={styles.programInfo}>
-              <Text style={styles.programName}>{item.program}</Text>
-              <Text style={styles.hostName}>{item.host}</Text>
-            </View>
-            
-            <Text style={styles.timeText}>{item.time}</Text>
-          </View>
-        ))}
-      </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -81,7 +97,12 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   title: {
@@ -91,6 +112,7 @@ const styles = StyleSheet.create({
   },
   programList: {
     gap: 0,
+    marginTop: 16,
   },
   programItem: {
     flexDirection: 'row',

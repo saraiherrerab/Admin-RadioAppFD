@@ -1,4 +1,5 @@
-import { TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
+import { TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants';
 
 const { height } = Dimensions.get('window');
@@ -11,7 +12,11 @@ export default function PlayButton({ onPress, isPlaying = false }) {
       style={[styles.button, { width: buttonSize, height: buttonSize, borderRadius: buttonSize / 2 }]} 
       onPress={onPress}
     >
-      <Text style={styles.icon}>{isPlaying ? '⏸' : '▶'}</Text>
+      {isPlaying ? (
+        <Ionicons name="stop" size={28} color={COLORS.white} />
+      ) : (
+        <Ionicons name="play" size={28} color={COLORS.white} style={styles.playIcon} />
+      )}
     </TouchableOpacity>
   );
 }
@@ -27,9 +32,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
-  icon: {
-    fontSize: 28,
-    color: COLORS.white,
+  playIcon: {
     marginLeft: 3,
   },
 });

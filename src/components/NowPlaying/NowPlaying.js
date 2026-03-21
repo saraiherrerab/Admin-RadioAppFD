@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../../constants';
 
 const { width, height } = Dimensions.get('window');
@@ -6,13 +7,17 @@ const { width, height } = Dimensions.get('window');
 export default function NowPlaying({ song, artist }) {
   return (
     <View style={styles.container}>
-      <View style={styles.albumArt}>
-        <View style={styles.discIcon}>
-          <View style={styles.discOuter}>
-            <View style={styles.discInner} />
-          </View>
-        </View>
-      </View>
+      <LinearGradient
+        colors={['#E8D5F5', '#D4E4F7', '#E8D5F5']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.albumArt}
+      >
+        <Image 
+          source={require('../../../assets/icons/DISK.png')} 
+          style={styles.diskImage}
+        />
+      </LinearGradient>
       
       <Text style={styles.nowPlayingLabel}>REPRODUCIENDO AHORA</Text>
       <Text style={styles.songTitle} numberOfLines={1}>{song}</Text>
@@ -31,7 +36,6 @@ const styles = StyleSheet.create({
     width: width * 0.45,
     maxWidth: 200,
     aspectRatio: 1,
-    backgroundColor: '#E8E4F3',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -42,24 +46,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  discIcon: {
+  diskImage: {
     width: '50%',
-    aspectRatio: 1,
-  },
-  discOuter: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 1000,
-    borderWidth: 6,
-    borderColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  discInner: {
-    width: '30%',
-    height: '30%',
-    borderRadius: 1000,
-    backgroundColor: COLORS.primary,
+    height: '50%',
+    resizeMode: 'contain',
   },
   nowPlayingLabel: {
     fontSize: 10,

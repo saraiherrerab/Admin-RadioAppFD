@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants';
@@ -12,7 +12,10 @@ export default function Header({ onNotificationPress }) {
       style={styles.container}
     >
       <View style={styles.iconContainer}>
-        <Text style={styles.icon}>📻</Text>
+        <Image 
+          source={require('../../../assets/icons/radiologo.png')} 
+          style={styles.logo}
+        />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>Estrella FM</Text>
@@ -38,8 +41,10 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginRight: 15,
   },
-  icon: {
-    fontSize: 32,
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
   },
   textContainer: {
     flex: 1,

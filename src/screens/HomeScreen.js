@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants';
 import AdminHomeScreen from './AdminHomeScreen';
+import NotificationsScreen from './NotificationsScreen';
 import ConfigScreen from './ConfigScreen';
 import PlayerScreen from './PlayerScreen';
 
@@ -12,7 +13,7 @@ export default function HomeScreen() {
 
   const tabs = [
     { id: 0, icon: require('../../assets/icons/calendar.png'), label: 'Programación' },
-    { id: 1, icon: require('../../assets/icons/deco.png'), label: 'Diseño' },
+    { id: 1, icon: require('../../assets/icons/notification-bell.png'), label: 'Notificaciones' },
     { id: 2, icon: require('../../assets/icons/settings.png'), label: 'Configuración' },
     { id: 3, icon: require('../../assets/icons/play.png'), label: 'Reproducción' },
   ];
@@ -21,6 +22,8 @@ export default function HomeScreen() {
     switch (activeTab) {
       case 0:
         return <AdminHomeScreen />;
+      case 1:
+        return <NotificationsScreen />;
       case 2:
         return <ConfigScreen />;
       case 3:
@@ -57,12 +60,6 @@ export default function HomeScreen() {
                 <Text style={styles.headerSubtitle}>Tu música, tu radio</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.notificationButton}>
-              <Image 
-                source={require('../../assets/icons/notification-bell.png')} 
-                style={styles.notificationIcon}
-              />
-            </TouchableOpacity>
           </View>
 
           {/* Tab Bar */}

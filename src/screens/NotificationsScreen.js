@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { apiService } from '../services';
 import { COLORS } from '../constants';
 
 export default function NotificationsScreen() {
@@ -8,30 +9,24 @@ export default function NotificationsScreen() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [editingNotification, setEditingNotification] = useState(null);
-  
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'Nuevo programa',
-      message: 'Trasnoche con Laura Martínez comienza esta noche',
-      time: 'Hace 2 horas',
-      active: true,
-    },
-    {
-      id: 2,
-      title: 'Concurso activo',
-      message: 'Participa y gana entradas para el concierto',
-      time: 'Hace 5 horas',
-      active: true,
-    },
-    {
-      id: 3,
-      title: 'Actualización',
-      message: 'Nueva versión de la app disponible',
-      time: 'Ayer',
-      active: false,
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    try {
+      setIsLoading(true);
+      const data = await apiService.getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo cargar las notificaciones');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddNotification = () => {
     setEditingNotification(null);
@@ -54,44 +49,67 @@ export default function NotificationsScreen() {
     setMessage('');
   };
 
-  const handleSaveNotification = () => {
+  const handleSaveNotification = async () => {
     if (!title || !message) {
-      alert('Por favor completa todos los campos');
+      Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
 
-    if (editingNotification) {
-      // Actualizar notificación existente
-      const updatedNotifications = notifications.map(notif =>
-        notif.id === editingNotification.id
-          ? { ...notif, title, message }
-          : notif
-      );
-      setNotifications(updatedNotifications);
-    } else {
-      // Crear nueva notificación
-      const newNotification = {
-        id: notifications.length + 1,
-        title,
-        message,
-        time: 'Ahora',
-        active: true,
-      };
-      setNotifications([newNotification, ...notifications]);
+    try {
+      if (editingNotification) {
+        // Actualizar notificación existente
+        await apiService.updateNotification(editingNotification.id, {
+          title,
+          message,
+          active: editingNotification.active
+        });
+      } else {
+        // Crear nueva notificación
+        await apiService.createNotification({ title, message });
+      }
+
+      await loadNotifications();
+      handleCloseModal();
+      Alert.alert('Éxito', editingNotification ? 'Notificación actualizada' : 'Notificación creada');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo guardar la notificación');
     }
-
-    handleCloseModal();
   };
 
-  const handleDeleteNotification = (id) => {
-    setNotifications(notifications.filter(notif => notif.id !== id));
-  };
-
-  const handleToggleActive = (id) => {
-    const updatedNotifications = notifications.map(notif =>
-      notif.id === id ? { ...notif, active: !notif.active } : notif
+  const handleDeleteNotification = async (id) => {
+    Alert.alert(
+      'Confirmar',
+      '¿Estás seguro de eliminar esta notificación?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiService.deleteNotification(id);
+              await loadNotifications();
+              Alert.alert('Éxito', 'Notificación eliminada');
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo eliminar la notificación');
+            }
+          }
+        }
+      ]
     );
-    setNotifications(updatedNotifications);
+  };
+
+  const handleToggleActive = async (id) => {
+    try {
+      const notification = notifications.find(n => n.id === id);
+      await apiService.updateNotification(id, {
+        ...notification,
+        active: !notification.active
+      });
+      await loadNotifications();
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo actualizar el estado');
+    }
   };
 
   return (

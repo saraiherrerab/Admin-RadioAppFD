@@ -1,17 +1,51 @@
-import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { apiService } from '../services';
 import { COLORS } from '../constants';
 
 export default function ConfigScreen() {
-  const [streamUrl, setStreamUrl] = useState('https://stream.miradio.com/live');
-  const [website, setWebsite] = useState('https://www.miradio.com');
-  const [facebook, setFacebook] = useState('@miradio');
-  const [instagram, setInstagram] = useState('@miradio');
-  const [twitter, setTwitter] = useState('@miradio');
+  const [streamUrl, setStreamUrl] = useState('');
+  const [website, setWebsite] = useState('');
+  const [facebook, setFacebook] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [twitter, setTwitter] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSave = () => {
-    // Aquí iría la lógica para guardar la configuración
-    console.log('Configuración guardada');
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const loadConfig = async () => {
+    try {
+      setIsLoading(true);
+      const config = await apiService.getConfig();
+      setStreamUrl(config.streamUrl || '');
+      setWebsite(config.website || '');
+      setFacebook(config.facebook || '');
+      setInstagram(config.instagram || '');
+      setTwitter(config.twitter || '');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo cargar la configuración');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const configData = {
+        streamUrl,
+        website,
+        facebook,
+        instagram,
+        twitter
+      };
+      
+      await apiService.updateConfig(configData);
+      Alert.alert('Éxito', 'Configuración actualizada correctamente');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo guardar la configuración');
+    }
   };
 
   return (

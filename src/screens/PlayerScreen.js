@@ -2,22 +2,36 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NowPlaying, PlayButton, SocialLinks, Footer, Schedule, NotificationPanel } from '../components';
-import { audioPlayer } from '../services';
+import { audioPlayer, apiService } from '../services';
 import { COLORS } from '../constants';
 
 const STREAM_URL = 'https://streamingned.com:7190/stream';
+const METADATA_REFRESH_INTERVAL = 10000; // 10 segundos
 
 export default function PlayerScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [nowPlaying, setNowPlaying] = useState({ song: 'Estrella FM', artist: 'Tu música, tu radio' });
 
   useEffect(() => {
     audioPlayer.initialize();
     
+    // Obtener metadatos iniciales
+    fetchNowPlaying();
+
+    // Actualizar metadatos cada 10 segundos
+    const metadataInterval = setInterval(fetchNowPlaying, METADATA_REFRESH_INTERVAL);
+    
     return () => {
       audioPlayer.stop();
+      clearInterval(metadataInterval);
     };
   }, []);
+
+  const fetchNowPlaying = async () => {
+    const metadata = await apiService.getNowPlaying();
+    setNowPlaying(metadata);
+  };
 
   const handlePlayPress = async () => {
     try {
@@ -46,8 +60,8 @@ export default function PlayerScreen() {
         showsVerticalScrollIndicator={false}
       >
         <NowPlaying 
-          song="Blinding Lights" 
-          artist="The Weeknd" 
+          song={nowPlaying.song} 
+          artist={nowPlaying.artist} 
         />
         
         <View style={styles.playButtonContainer}>

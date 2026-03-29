@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { apiService } from '../services';
 import { COLORS } from '../constants';
 
 export default function AdminHomeScreen() {
@@ -15,25 +16,25 @@ export default function AdminHomeScreen() {
   const [host, setHost] = useState('');
   const [description, setDescription] = useState('');
   const [editingProgram, setEditingProgram] = useState(null);
-  
-  const [programs, setPrograms] = useState([
-    {
-      id: 1,
-      name: 'Buenos Días',
-      day: 'Lunes',
-      schedule: '06:00 - 10:00',
-      host: 'Juan Pérez',
-      description: 'Programa matutino con las mejores noticias y música'
-    },
-    {
-      id: 2,
-      name: 'Tarde Musical',
-      day: 'Lunes',
-      schedule: '14:00 - 18:00',
-      host: 'María González',
-      description: 'Los mejores éxitos de la música latina'
+  const [programs, setPrograms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Cargar programación desde el backend
+  useEffect(() => {
+    loadPrograms();
+  }, []);
+
+  const loadPrograms = async () => {
+    try {
+      setIsLoading(true);
+      const data = await apiService.getSchedule();
+      setPrograms(data);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo cargar la programación');
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
 
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const filterDays = ['Todos', ...days];
@@ -63,23 +64,29 @@ export default function AdminHomeScreen() {
     setShowDayPicker(false);
   };
 
-  const handleSaveProgram = () => {
+  const handleSaveProgram = async () => {
     if (!selectedDay || !programName || !startTime || !endTime || !host) {
-      alert('Por favor completa todos los campos obligatorios');
+      Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
       return;
     }
 
-    const newProgram = {
-      id: programs.length + 1,
-      name: programName,
-      day: selectedDay,
-      schedule: `${startTime} - ${endTime}`,
-      host: host,
-      description: description
-    };
+    try {
+      const programData = {
+        name: programName,
+        day: selectedDay,
+        startTime,
+        endTime,
+        host,
+        description
+      };
 
-    setPrograms([...programs, newProgram]);
-    handleCloseModal();
+      await apiService.createProgram(programData);
+      await loadPrograms(); // Recargar la lista
+      handleCloseModal();
+      Alert.alert('Éxito', 'Programa creado correctamente');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo guardar el programa');
+    }
   };
 
   const handleEditProgram = (program) => {
@@ -107,27 +114,52 @@ export default function AdminHomeScreen() {
     setDescription('');
   };
 
-  const handleUpdateProgram = () => {
+  const handleUpdateProgram = async () => {
     if (!selectedDay || !programName || !startTime || !endTime || !host) {
-      alert('Por favor completa todos los campos obligatorios');
+      Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
       return;
     }
 
-    const updatedPrograms = programs.map(program => 
-      program.id === editingProgram.id
-        ? {
-            ...program,
-            name: programName,
-            day: selectedDay,
-            schedule: `${startTime} - ${endTime}`,
-            host: host,
-            description: description
-          }
-        : program
-    );
+    try {
+      const programData = {
+        name: programName,
+        day: selectedDay,
+        startTime,
+        endTime,
+        host,
+        description
+      };
 
-    setPrograms(updatedPrograms);
-    handleCloseEditModal();
+      await apiService.updateProgram(editingProgram.id, programData);
+      await loadPrograms(); // Recargar la lista
+      handleCloseEditModal();
+      Alert.alert('Éxito', 'Programa actualizado correctamente');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo actualizar el programa');
+    }
+  };
+
+  const handleDeleteProgram = async (id) => {
+    Alert.alert(
+      'Confirmar',
+      '¿Estás seguro de eliminar este programa?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiService.deleteProgram(id);
+              await loadPrograms();
+              Alert.alert('Éxito', 'Programa eliminado correctamente');
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo eliminar el programa');
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -210,7 +242,10 @@ export default function AdminHomeScreen() {
                         style={styles.actionIcon}
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleDeleteProgram(program.id)}
+                    >
                       <Image 
                         source={require('../../assets/icons/delete.png')} 
                         style={styles.actionIcon}

@@ -1,23 +1,21 @@
-import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { AlbumArt } from '../AlbumArt';
+import { getCoverSource, shouldShowDiskIcon } from '../../utils/coverArtHelper';
 import { COLORS } from '../../constants';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
-export default function NowPlaying({ song, artist }) {
+export default function NowPlaying({ song, artist, coverUrl }) {
+  const coverSource = getCoverSource(coverUrl);
+  const showDiskIcon = shouldShowDiskIcon(coverUrl);
+
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#E8D5F5', '#D4E4F7', '#E8D5F5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.albumArt}
-      >
-        <Image 
-          source={require('../../../assets/icons/DISK.png')} 
-          style={styles.diskImage}
-        />
-      </LinearGradient>
+      <AlbumArt 
+        imageSource={coverSource}
+        showDiskIcon={showDiskIcon}
+        size="medium"
+      />
       
       <Text style={styles.nowPlayingLabel}>REPRODUCIENDO AHORA</Text>
       <Text style={styles.songTitle} numberOfLines={1}>{song}</Text>
@@ -29,44 +27,26 @@ export default function NowPlaying({ song, artist }) {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: height * 0.02,
+    paddingVertical: height * 0.01,
     paddingHorizontal: 20,
-  },
-  albumArt: {
-    width: width * 0.45,
-    maxWidth: 200,
-    aspectRatio: 1,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  diskImage: {
-    width: '50%',
-    height: '50%',
-    resizeMode: 'contain',
   },
   nowPlayingLabel: {
     fontSize: 10,
-    color: COLORS.textLight,
+    color: '#9CA3AF',
     letterSpacing: 1,
-    marginBottom: 6,
+    marginBottom: 4,
+    marginTop: 8,
   },
   songTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: '#FFFFFF',
     marginBottom: 2,
     textAlign: 'center',
   },
   artistName: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: '#D1D5DB',
     textAlign: 'center',
   },
 });

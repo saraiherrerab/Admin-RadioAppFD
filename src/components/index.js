@@ -6,3 +6,5 @@ export * from './SocialLinks';
 export * from './Footer';
 export * from './Schedule';
 export * from './NotificationPanel';
+export * from './AlbumArt';
+export * from './DynamicBackground';
